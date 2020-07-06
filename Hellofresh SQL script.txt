@@ -1,0 +1,62 @@
+1. 
+select p.product_sku from product as p
+inner join
+(select * from subscription as s
+inner join customer as c on s.fk_customer = c.id_customer
+where s.status = 'active' and c.email = 'fancygirl83@hotmail.com') as virtualtable
+on virtualtable.fk_product_subscribed_to = p.id_product;
+
+2. 
+select * from subscription 
+inner join (
+  select p.id_product, pf.product_family_handle
+  from product as p
+  inner join product family as pf on p.product_family = pf.product_family
+  where pf.product_family_handle = 'classic-box') as virtualtable 
+  on virtualtable.id_product = subscription.product_subscribed_to
+where status = 'active';
+
+3. 
+select * from subscription as s 
+inner join product as p on s.id_product = p.fk_product_subscribed_to
+where p.number_of_meals = 1 and s.status = 'paused';
+
+4. 
+select count(id_subscription)
+FROM subscription;
+
+5. 
+select count(id_product)
+FROM product
+where number_of_recipes >1
+and number_of_meals > 1;
+
+6.
+select p.id_product, p.number_of_meals, p.number_of_recipes from product, s.id_subscription as p 
+inner join subscription as s 
+on p.id_product = s.fk_product_subscribed_to
+where p.number_of_meals > 1 and p.number_of_recipes > 1
+groupby s.id_subscription;
+
+7.
+select c.first_name, c.last_name, c.id_customer, v2.boxes from customer as c
+inner join
+(select s.fk_customer as fk_customer, v.number_of_boxes as boxes from subscription as s
+inner join
+(select p.id_product as id_product,count(p.number_of_meals) as number_of_boxes from product as p
+inner join order as o on p.id_product = o.fk_product
+where o.delivery_date >= ADDDATE(NOW(), -14) AND o.delivery_date < NOW() groupby p.id_product) as v
+on v.id_product = s.fk_product_subscribed_to) as v2
+on c.id_customer = v2.fk_customer;
+
+8.
+select p.product_sku, o.delivery_date as latest_date, p.purchase_price 
+from product as p
+inner join order as o 
+on o.fk_product = p.id_product
+where o.delivery_date = MAX(o.delivery_date);
+
+
+
+
+
